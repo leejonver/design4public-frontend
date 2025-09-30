@@ -1,37 +1,61 @@
 "use client";
+"use client";
+
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { photos, projects, items } from "@/lib/mock-data";
+import useSWR from "swr";
 import { Input } from "@/components/ui/input";
+import { fetchPhotos } from "@/lib/api";
 
 export default function PhotosPage() {
   const [q, setQ] = useState("");
-  const allTags = useMemo(() => Array.from(new Set(photos.flatMap((p) => p.tags))).sort(), []);
   const [selected, setSelected] = useState<string[]>([]);
+  const { data } = useSWR("photos", () => fetchPhotos());
+
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    (data ?? []).forEach((photo: { image_tags: { tags: { name: string } | null }[] }) => {
+      photo.image_tags.forEach((tag) => {
+        if (tag.tags?.name) tagSet.add(tag.tags.name);
+      });
+    });
+    return Array.from(tagSet);
+  }, [data]);
 
   const filtered = useMemo(() => {
-    return photos.filter((p) => {
-      const matchesQ = q ? `${p.alt} ${p.tags.join(" ")}`.toLowerCase().includes(q.toLowerCase()) : true;
-      const matchesTags = selected.length === 0 || selected.every((t) => p.tags.includes(t));
+    if (!data) return [];
+    return data.filter((photo: { image_tags: { tags: { name: string } | null }[]; projects: { title: string } | null }) => {
+      const tags = photo.image_tags
+        .map((tag) => tag.tags?.name)
+        .filter((name): name is string => Boolean(name));
+      const matchesQ = q ? (photo.projects?.title ?? "").toLowerCase().includes(q.toLowerCase()) : true;
+      const matchesTags = selected.length === 0 || selected.every((tag) => tags.includes(tag));
       return matchesQ && matchesTags;
     });
-  }, [q, selected]);
+  }, [data, q, selected]);
 
   return (
     <section>
       <h1 className="mb-4 text-xl font-semibold">Photos</h1>
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Input placeholder="사진 검색" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <Input
+          placeholder="프로젝트 제목 검색"
+          value={q}
+          onChange={(event) => setQ(event.target.value)}
+          className="max-w-xs"
+        />
         <div className="flex flex-wrap gap-2">
-          {allTags.map((t) => {
-            const active = selected.includes(t);
+          {allTags.map((tag) => {
+            const active = selected.includes(tag);
             return (
               <button
-                key={t}
-                onClick={() => setSelected((prev) => (active ? prev.filter((x) => x !== t) : [...prev, t]))}
+                key={tag}
+                onClick={() =>
+                  setSelected((prev) => (active ? prev.filter((id) => id !== tag) : [...prev, tag]))
+                }
                 className={`rounded-full border px-3 py-1 text-xs ${active ? "bg-sage-100 border-sage-200 text-sage-800" : "hover:bg-accent"}`}
               >
-                #{t}
+                #{tag}
               </button>
             );
           })}
@@ -39,19 +63,25 @@ export default function PhotosPage() {
       </div>
 
       <div className="masonry columns-1 sm:columns-2 lg:columns-3">
-        {filtered.map((ph) => {
-          const project = ph.projectId ? projects.find((p) => p.id === ph.projectId) : undefined;
-          const item = ph.itemId ? items.find((i) => i.id === ph.itemId) : undefined;
-          const href = project ? `/projects/${project.slug}` : item ? `/items/${item.slug}` : undefined;
+        {filtered.map((photo: {
+          id: string;
+          projects: { slug: string; title: string } | null;
+          image_url: string;
+        }) => {
+          const project = photo.projects;
+          const href = project ? `/projects/${project.slug}` : undefined;
           return href ? (
-            <Link key={ph.id} href={href} className="block overflow-hidden rounded-lg">
-              <img src={ph.url} alt={ph.alt} className="w-full object-cover transition-transform hover:scale-[1.02]" />
-              <div className="p-2 text-xs text-muted-foreground">{ph.alt}</div>
+            <Link key={photo.id} href={href} className="block overflow-hidden rounded-lg">
+              <img
+                src={photo.image_url}
+                alt={project?.title ?? "프로젝트 이미지"}
+                className="w-full object-cover transition-transform hover:scale-[1.02]"
+              />
+              <div className="p-2 text-xs text-muted-foreground">{project?.title}</div>
             </Link>
           ) : (
-            <div key={ph.id} className="block overflow-hidden rounded-lg">
-              <img src={ph.url} alt={ph.alt} className="w-full object-cover" />
-              <div className="p-2 text-xs text-muted-foreground">{ph.alt}</div>
+            <div key={photo.id} className="block overflow-hidden rounded-lg">
+              <img src={photo.image_url} alt="프로젝트 이미지" className="w-full object-cover" />
             </div>
           );
         })}

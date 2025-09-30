@@ -4,4 +4,9 @@ out
 dist
 .DS_Store
 .env
+.env.local
+.next-dev.log
+playwright-report/
+test-results/
 
+.vercel
