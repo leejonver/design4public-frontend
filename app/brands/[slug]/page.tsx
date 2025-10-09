@@ -29,12 +29,15 @@ export default async function BrandDetailPage({ params }: Props) {
     <article className="space-y-6">
       <header className="space-y-3">
         <img
-          src={brand.cover_image_url ?? "/placeholder.png"}
-          alt={brand.name}
+          src={brand.cover_image_url ?? brand.logo_image_url ?? "/placeholder.png"}
+          alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
           className="h-48 w-full rounded-md object-cover"
         />
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">{brand.name}</h1>
+          <h1 className="text-2xl font-semibold">
+            {brand.name_ko}
+            {brand.name_en ? <span className="ml-2 text-sm text-muted-foreground">{brand.name_en}</span> : null}
+          </h1>
           <p className="text-muted-foreground">{brand.description}</p>
           {brand.website_url ? (
             <a href={brand.website_url} target="_blank" className="text-sage-700 underline text-sm">

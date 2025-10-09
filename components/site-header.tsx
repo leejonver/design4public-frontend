@@ -11,7 +11,6 @@ export function SiteHeader() {
         <nav className="flex items-center gap-6 text-sm">
           <Link href="/projects" className="hover:text-sage-700">Projects</Link>
           <Link href="/items" className="hover:text-sage-700">Items</Link>
-          <Link href="/photos" className="hover:text-sage-700">Photos</Link>
           <Link href="/brands" className="hover:text-sage-700">Brands</Link>
         </nav>
       </div>

@@ -36,10 +36,10 @@ export function ProjectsGrid() {
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project: any) => {
         const brandNames = project.project_items
-          .map((item: any) => item.items?.brands?.name)
+          .map((item: any) => item.items?.brands?.name_ko ?? item.items?.brands?.name_en)
           .filter(Boolean) as string[];
         const tags = project.project_tags
-          .map((tag: any) => tag.tags?.name)
+          .map((tag: any) => (tag.tags?.type === "project" ? tag.tags?.name : undefined))
           .filter((name: string | undefined): name is string => Boolean(name));
         const cover = project.cover_image_url ?? project.project_images[0]?.image_url ?? "/placeholder.png";
 

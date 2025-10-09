@@ -5,29 +5,33 @@ import useSWR from "swr";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { fetchProjects, fetchBrands, fetchTags } from "@/lib/api";
+import { fetchItems, fetchBrands, fetchTags } from "@/lib/api";
 
-type BrandFilter = { id: string; name: string };
+type BrandFilter = { id: string; name_ko: string; name_en: string | null };
 type TagFilter = { id: string; name: string };
 
-export function ProjectsFilter() {
+export function ItemsFilter() {
   const [search, setSearch] = useState("");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  const { data: projects } = useSWR("projects-filter", () => fetchProjects());
+  const { data: items } = useSWR("items-filter", () => fetchItems());
   const { data: brands } = useSWR("brands-filter", () => fetchBrands());
   const { data: tags } = useSWR("tags-filter", () => fetchTags());
 
   const brandOptions: BrandFilter[] = useMemo(() => {
-    return (brands ?? []).map((b: { id: string; name: string }) => ({ id: b.id, name: b.name }));
+    return (brands ?? []).map((b: { id: string; name_ko: string; name_en: string | null }) => ({
+      id: b.id,
+      name_ko: b.name_ko,
+      name_en: b.name_en,
+    }));
   }, [brands]);
 
-const tagOptions: TagFilter[] = useMemo(() => {
-  return (tags ?? [])
-    .filter((t: { id: string; name: string; type?: string }) => !t.type || t.type === "project")
-    .map((t: { id: string; name: string }) => ({ id: t.id, name: t.name }));
-}, [tags]);
+  const tagOptions: TagFilter[] = useMemo(() => {
+    return (tags ?? [])
+      .filter((t: { id: string; name: string; type?: string }) => t.type === "item")
+      .map((t: { id: string; name: string }) => ({ id: t.id, name: t.name }));
+  }, [tags]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -51,12 +55,12 @@ const tagOptions: TagFilter[] = useMemo(() => {
       <div>
         <h2 className="mb-2 text-base font-semibold">필터</h2>
         <Input
-          placeholder="검색 (제목, 설명, 태그)"
+          placeholder="검색 (이름, 설명, 태그)"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
         />
         <p className="mt-2 text-xs text-muted-foreground">
-          총 {projects?.length ?? 0}개의 프로젝트가 등록되어 있습니다.
+          총 {items?.length ?? 0}개의 아이템이 등록되어 있습니다.
         </p>
       </div>
 
@@ -75,7 +79,8 @@ const tagOptions: TagFilter[] = useMemo(() => {
                     )
                   }
                 />
-                {brand.name}
+                {brand.name_ko}
+                {brand.name_en ? <span className="text-xs text-muted-foreground">({brand.name_en})</span> : null}
               </label>
             );
           })}

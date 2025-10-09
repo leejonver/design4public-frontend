@@ -21,14 +21,17 @@ export default async function BrandsPage() {
             <Link href={`/brands/${brand.slug}`}>
               <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <img
-                  src={brand.cover_image_url ?? "/placeholder.png"}
-                  alt={brand.name}
+                  src={brand.cover_image_url ?? brand.logo_image_url ?? "/placeholder.png"}
+                  alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
                   className="h-full w-full object-cover"
                 />
               </div>
             </Link>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">{brand.name}</CardTitle>
+              <CardTitle className="flex items-center gap-2 text-base">
+                {brand.name_ko}
+                {brand.name_en ? <span className="text-xs text-muted-foreground">({brand.name_en})</span> : null}
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="line-clamp-2 text-sm text-muted-foreground">{brand.description}</p>

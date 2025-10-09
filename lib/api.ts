@@ -19,10 +19,10 @@ export async function fetchProjects(filters: ProjectFilters = {}) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      `id,slug,title,description,cover_image_url,year,area,status,
+      `id,slug,title,description,cover_image_url,year,area,status,location,created_at,updated_at,
        project_images(id,image_url,order),
-       project_tags(tag_id,tags(id,name)),
-       project_items(item_id,items(id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name)))`
+       project_tags(tag_id,tags(id,name,type)),
+       project_items(item_id,items(id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name_ko,name_en)))`
     )
     .eq("status", "published")
     .order("year", { ascending: false, nullsFirst: false });
@@ -58,10 +58,10 @@ export async function fetchProjectBySlug(slug: string) {
   const { data, error } = await supabase
     .from("projects")
     .select(
-      `id,slug,title,description,cover_image_url,year,area,status,
+      `id,slug,title,description,cover_image_url,year,area,status,location,created_at,updated_at,
        project_images(id,image_url,order),
-       project_tags(tag_id,tags(id,name)),
-       project_items(item_id,items(id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name,description,cover_image_url,website_url)))`
+       project_tags(tag_id,tags(id,name,type)),
+       project_items(item_id,items(id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name_ko,name_en,description,cover_image_url,website_url)))`
     )
     .eq("slug", slug)
     .eq("status", "published")
@@ -76,8 +76,8 @@ export type Brand = Tables<"brands">;
 export async function fetchBrands() {
   const { data, error } = await supabase
     .from("brands")
-    .select("id,slug,name,description,cover_image_url,website_url")
-    .order("name");
+    .select("id,slug,name_ko,name_en,description,logo_image_url,cover_image_url,website_url")
+    .order("name_ko", { ascending: true });
   if (error) throw error;
   return (data ?? []) as Brand[];
 }
@@ -86,7 +86,7 @@ export async function fetchBrandBySlug(slug: string) {
   const { data, error } = await supabase
     .from("brands")
     .select(
-      `id,slug,name,description,cover_image_url,website_url,
+      `id,slug,name_ko,name_en,description,logo_image_url,cover_image_url,website_url,
        items(id,slug,name,description,image_url,nara_url,project_items(project_id,projects(id,slug,title,cover_image_url,year))),
        projects:project_items(project_id,projects(id,slug,title,cover_image_url,year,status))`
     )
@@ -103,13 +103,18 @@ export async function fetchBrandBySlug(slug: string) {
 
 export type Item = Tables<"items"> & {
   brands: Tables<"brands"> | null;
+  item_tags: (Tables<"item_tags"> & { tags: Tables<"tags"> | null })[];
   project_items: { project_id: string; projects: Tables<"projects"> | null }[];
 };
 
 export async function fetchItems() {
   const { data, error } = await supabase
     .from("items")
-    .select("id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name)")
+    .select(
+      `id,slug,name,description,image_url,nara_url,status,brand_id,
+       brands(id,slug,name_ko,name_en,logo_image_url,cover_image_url),
+       item_tags(tag_id,tags(id,name,type))`
+    )
     .order("name");
   if (error) throw error;
   return (data ?? []) as Item[];
@@ -119,9 +124,10 @@ export async function fetchItemBySlug(slug: string) {
   const { data, error } = await supabase
     .from("items")
     .select(
-      `id,slug,name,description,image_url,nara_url,brand_id,
-       brands(id,slug,name,description,cover_image_url,website_url),
-       project_items(project_id,projects(id,slug,title,cover_image_url,year,status))`
+      `id,slug,name,description,image_url,nara_url,brand_id,status,
+       brands(id,slug,name_ko,name_en,description,cover_image_url,website_url),
+       item_tags(tag_id,tags(id,name,type)),
+       project_items(project_id,projects(id,slug,title,cover_image_url,year,status,area,location))`
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -130,7 +136,7 @@ export async function fetchItemBySlug(slug: string) {
 }
 
 export async function fetchTags() {
-  const { data, error } = await supabase.from("tags").select("id,name").order("name");
+  const { data, error } = await supabase.from("tags").select("id,name,type").order("name");
   if (error) throw error;
   return (data ?? []) as Tables<"tags">[];
 }

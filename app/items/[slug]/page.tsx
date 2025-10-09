@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchItemBySlug } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
 import { formatArea } from "@/lib/utils";
 
 type Props = { params: { slug: string } };
@@ -16,11 +17,20 @@ export default async function ItemDetailPage({ params }: Props) {
     cover_image_url: string | null;
     year: number | null;
     area?: number | null;
+    brand_count?: number | null;
+    name_ko?: string | null;
+    name_en?: string | null;
   };
 
   const relatedProjects: RelatedProject[] = item.project_items
     .map((pi: { project_id: string; projects: RelatedProject | null }) => pi.projects)
     .filter((project: RelatedProject | null): project is RelatedProject => Boolean(project));
+
+  const tags = item.item_tags
+    ?.map((tag: { tags: { name: string; type?: string } | null }) =>
+      tag.tags?.type === "item" ? tag.tags?.name : undefined
+    )
+    .filter((name: string | undefined): name is string => Boolean(name));
 
   return (
     <article className="space-y-6">
@@ -49,8 +59,22 @@ export default async function ItemDetailPage({ params }: Props) {
             href={`/brands/${item.brands.slug}`}
             className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm hover:bg-accent"
           >
-            {item.brands.name}
+            {item.brands.name_ko}
+            {item.brands.name_en ? (
+              <span className="text-xs text-muted-foreground">({item.brands.name_en})</span>
+            ) : null}
           </Link>
+        </section>
+      ) : null}
+
+      {tags?.length ? (
+        <section>
+          <h2 className="mb-2 text-lg font-medium">태그</h2>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag: string) => (
+              <Badge key={tag}>#{tag}</Badge>
+            ))}
+          </div>
         </section>
       ) : null}
 

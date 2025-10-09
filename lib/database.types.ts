@@ -18,7 +18,9 @@ export type Database = {
           created_at: string;
           description: string | null;
           id: string;
-          name: string;
+          logo_image_url: string | null;
+          name_en: string | null;
+          name_ko: string;
           slug: string;
           updated_at: string;
           website_url: string | null;
@@ -28,7 +30,9 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
-          name: string;
+          logo_image_url?: string | null;
+          name_en?: string | null;
+          name_ko: string;
           slug: string;
           updated_at?: string;
           website_url?: string | null;
@@ -38,7 +42,9 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
-          name?: string;
+          logo_image_url?: string | null;
+          name_en?: string | null;
+          name_ko?: string;
           slug?: string;
           updated_at?: string;
           website_url?: string | null;
@@ -88,6 +94,7 @@ export type Database = {
           name: string;
           nara_url: string | null;
           slug: string;
+          status: string;
           updated_at: string;
         };
         Insert: {
@@ -99,6 +106,7 @@ export type Database = {
           name: string;
           nara_url?: string | null;
           slug: string;
+          status?: string;
           updated_at?: string;
         };
         Update: {
@@ -110,6 +118,7 @@ export type Database = {
           name?: string;
           nara_url?: string | null;
           slug?: string;
+          status?: string;
           updated_at?: string;
         };
         Relationships: [
@@ -118,6 +127,39 @@ export type Database = {
             columns: ["brand_id"];
             isOneToOne: false;
             referencedRelation: "brands";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      item_tags: {
+        Row: {
+          created_at: string;
+          item_id: string;
+          tag_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          item_id: string;
+          tag_id: string;
+        };
+        Update: {
+          created_at?: string;
+          item_id?: string;
+          tag_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "item_tags_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "item_tags_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
             referencedColumns: ["id"];
           }
         ];
@@ -178,13 +220,6 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "projects";
             referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "project_images_project_id_fkey";
-            columns: ["project_id"];
-            isOneToOne: false;
-            referencedRelation: "projects_with_details";
-            referencedColumns: ["id"];
           }
         ];
       };
@@ -217,13 +252,6 @@ export type Database = {
             columns: ["project_id"];
             isOneToOne: false;
             referencedRelation: "projects";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "project_items_project_id_fkey";
-            columns: ["project_id"];
-            isOneToOne: false;
-            referencedRelation: "projects_with_details";
             referencedColumns: ["id"];
           }
         ];
@@ -275,6 +303,7 @@ export type Database = {
           created_at: string;
           description: string | null;
           id: string;
+          location: string | null;
           slug: string;
           status: string;
           title: string;
@@ -287,6 +316,7 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
+          location?: string | null;
           slug: string;
           status?: string;
           title: string;
@@ -299,6 +329,7 @@ export type Database = {
           created_at?: string;
           description?: string | null;
           id?: string;
+          location?: string | null;
           slug?: string;
           status?: string;
           title?: string;
@@ -312,16 +343,19 @@ export type Database = {
           created_at: string;
           id: string;
           name: string;
+          type: Database["public"]["Enums"]["tag_type"];
         };
         Insert: {
           created_at?: string;
           id?: string;
           name: string;
+          type: Database["public"]["Enums"]["tag_type"];
         };
         Update: {
           created_at?: string;
           id?: string;
           name?: string;
+          type?: Database["public"]["Enums"]["tag_type"];
         };
         Relationships: [];
       };
@@ -406,6 +440,7 @@ export type Database = {
     };
     Enums: {
       project_status: "draft" | "published" | "hidden";
+      tag_type: "project" | "item";
     };
     CompositeTypes: {
       project_image_type: {

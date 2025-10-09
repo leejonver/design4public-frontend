@@ -14,9 +14,6 @@ export default function ProjectsListPage() {
       <section className="col-span-12 md:col-span-9">
         <header className="mb-6 flex flex-col gap-2">
           <h1 className="text-xl font-semibold">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            Supabase에 등록된 실제 납품 사례 데이터를 조회합니다.
-          </p>
         </header>
         <Suspense fallback={<ProjectsSkeleton />}>
           <ProjectsGrid />

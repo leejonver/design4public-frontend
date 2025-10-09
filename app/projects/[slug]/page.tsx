@@ -30,7 +30,9 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (!project) return notFound();
 
   const tags = project.project_tags
-    .map((tag: { tag_id: string; tags: { name: string } | null }) => tag.tags?.name)
+    .map((tag: { tag_id: string; tags: { name: string; type?: string } | null }) =>
+      tag.tags?.type === "project" ? tag.tags?.name : undefined
+    )
     .filter((name: string | null): name is string => Boolean(name));
 
   type RelatedItem = {
@@ -40,10 +42,12 @@ export default async function ProjectDetailPage({ params }: Props) {
     description: string;
     image_url: string | null;
     nara_url: string | null;
-    brands: { id: string; name: string } | null;
+    brands: { id: string; name_ko: string; name_en: string | null } | null;
   };
 
-  type RelatedItemWithBrand = RelatedItem & { brand: { id: string; name: string } | null };
+  type RelatedItemWithBrand = RelatedItem & {
+    brand: { id: string; name_ko: string; name_en: string | null } | null;
+  };
 
   const items: RelatedItemWithBrand[] = project.project_items
     .map((pi: { item_id: string; items: RelatedItem | null }) => pi.items)
@@ -97,7 +101,9 @@ export default async function ProjectDetailPage({ params }: Props) {
                     </Link>
                     <p className="line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
                     <div className="mt-2 text-xs text-muted-foreground">
-                      {item.brand ? `브랜드: ${item.brand.name}` : "브랜드 정보 없음"}
+                      {item.brand
+                        ? `브랜드: ${item.brand.name_ko}${item.brand.name_en ? ` (${item.brand.name_en})` : ""}`
+                        : "브랜드 정보 없음"}
                     </div>
                     {item.nara_url ? (
                       <div className="mt-2 text-xs">
