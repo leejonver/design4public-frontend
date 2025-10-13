@@ -26,53 +26,130 @@ export default async function BrandDetailPage({ params }: Props) {
     .filter((project: { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null } | null): project is { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null } => Boolean(project));
 
   return (
-    <article className="space-y-6">
-      <header className="space-y-3">
-        <img
-          src={brand.cover_image_url ?? brand.logo_image_url ?? "/placeholder.png"}
-          alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
-          className="h-48 w-full rounded-md object-cover"
-        />
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">
+    <article className="-mx-4 -mt-6 sm:-mx-6">
+      {/* Cover Image Section */}
+      <div className="relative">
+        <div className="h-64 w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 sm:h-80">
+          <img
+            src={brand.cover_image_url ?? "/placeholder.png"}
+            alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
+            className="h-full w-full object-cover"
+          />
+        </div>
+        
+        {/* Profile Image */}
+        <div className="absolute -bottom-16 left-4 sm:left-8">
+          <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
+            <img
+              src={brand.logo_image_url ?? brand.cover_image_url ?? "/placeholder.png"}
+              alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
+              className="h-full w-full object-contain p-2"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Brand Info Section */}
+      <div className="mt-20 px-4 sm:px-6">
+        <div className="border-b pb-6">
+          <h1 className="text-3xl font-bold">
             {brand.name_ko}
-            {brand.name_en ? <span className="ml-2 text-sm text-muted-foreground">{brand.name_en}</span> : null}
+            {brand.name_en && (
+              <span className="ml-3 text-lg font-normal text-muted-foreground">
+                {brand.name_en}
+              </span>
+            )}
           </h1>
-          <p className="text-muted-foreground">{brand.description}</p>
-          {brand.website_url ? (
-            <a href={brand.website_url} target="_blank" className="text-sage-700 underline text-sm">
+          
+          {brand.website_url && (
+            <a 
+              href={brand.website_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
               브랜드 홈페이지
             </a>
-          ) : null}
+          )}
+          
+          {brand.description && (
+            <p className="mt-4 text-muted-foreground leading-relaxed">
+              {brand.description}
+            </p>
+          )}
         </div>
-      </header>
 
-      <section>
-        <h2 className="mb-2 text-lg font-medium">최근 프로젝트</h2>
-        {projects.length ? (
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {projects.map((project: { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null }) => (
-              <li key={project.id} className="rounded-lg border p-4">
-                <Link href={`/projects/${project.slug}`} className="flex items-center gap-4">
-                  <img
-                    src={project.cover_image_url ?? "/placeholder.png"}
-                    alt={project.title}
-                    className="h-20 w-28 rounded object-cover"
-                  />
-                  <div>
-                    <div className="font-medium">{project.title}</div>
-                    <div className="text-xs text-muted-foreground">{project.year ?? "연도 미정"}</div>
+        {/* Items Section */}
+        {brand.items && brand.items.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-4 text-xl font-semibold">제품 목록</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {brand.items.map((item: any) => (
+                <Link 
+                  key={item.id} 
+                  href={`/items/${item.slug}`}
+                  className="group overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md"
+                >
+                  <div className="aspect-square w-full overflow-hidden bg-gray-50">
+                    <img
+                      src={item.image_url ?? "/placeholder.png"}
+                      alt={item.name}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-medium line-clamp-1">{item.name}</h3>
+                    {item.description && (
+                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
                   </div>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
-            아직 등록된 프로젝트가 없습니다.
-          </div>
+              ))}
+            </div>
+          </section>
         )}
-      </section>
+
+        {/* Projects Section */}
+        <section className="mt-8 pb-8">
+          <h2 className="mb-4 text-xl font-semibold">관련 프로젝트</h2>
+          {projects.length ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {projects.map((project: { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null }) => (
+                <Link
+                  key={project.id}
+                  href={`/projects/${project.slug}`}
+                  className="group overflow-hidden rounded-lg border bg-white transition-shadow hover:shadow-md"
+                >
+                  <div className="aspect-video w-full overflow-hidden bg-gray-50">
+                    <img
+                      src={project.cover_image_url ?? "/placeholder.png"}
+                      alt={project.title}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-medium">{project.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {project.year ?? "연도 미정"}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed bg-gray-50 p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                아직 등록된 프로젝트가 없습니다.
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
     </article>
   );
 }

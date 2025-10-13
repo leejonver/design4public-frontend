@@ -78,22 +78,77 @@ export async function fetchBrands() {
     .from("brands")
     .select("id,slug,name_ko,name_en,description,logo_image_url,cover_image_url,website_url")
     .order("name_ko", { ascending: true });
+  
   if (error) throw error;
+  
+  // Fallback to direct REST API call if Supabase client returns empty data
+  if (!data || data.length === 0) {
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/brands?select=*&order=name_ko.asc`;
+    const response = await fetch(url, {
+      headers: {
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const restData = await response.json();
+    return restData as Brand[];
+  }
+  
   return (data ?? []) as Brand[];
 }
 
 export async function fetchBrandBySlug(slug: string) {
-  const { data, error } = await supabase
-    .from("brands")
-    .select(
-      `id,slug,name_ko,name_en,description,logo_image_url,cover_image_url,website_url,
-       items(id,slug,name,description,image_url,nara_url,project_items(project_id,projects(id,slug,title,cover_image_url,year))),
-       projects:project_items(project_id,projects(id,slug,title,cover_image_url,year,status))`
-    )
-    .eq("slug", slug)
-    .maybeSingle();
-  if (error) throw error;
-  return data as (Brand & {
+  // Use REST API directly to avoid complex relationship issues with Supabase JS client
+  const brandUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/brands?select=id,slug,name_ko,name_en,description,logo_image_url,cover_image_url,website_url,items(id,slug,name,description,image_url,nara_url)&slug=eq.${slug}`;
+  const brandResponse = await fetch(brandUrl, {
+    headers: {
+      'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+    },
+  });
+  
+  if (!brandResponse.ok) {
+    throw new Error(`HTTP error! status: ${brandResponse.status}`);
+  }
+  
+  const brandData = await brandResponse.json();
+  if (!brandData || brandData.length === 0) {
+    return null;
+  }
+  
+  const brand = brandData[0];
+  
+  // Initialize empty projects array
+  brand.projects = [];
+  
+  // Try to fetch project_items for this brand if items exist
+  if (brand.items && brand.items.length > 0) {
+    try {
+      const itemIds = brand.items.map((item: any) => item.id).join(',');
+      const projectItemsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/project_items?select=project_id,item_id,projects(id,slug,title,cover_image_url,year,status)&item_id=in.(${itemIds})`;
+      const projectItemsResponse = await fetch(projectItemsUrl, {
+        headers: {
+          'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
+        },
+      });
+      
+      if (projectItemsResponse.ok) {
+        const projectItemsData = await projectItemsResponse.json();
+        brand.projects = projectItemsData || [];
+      }
+    } catch (err) {
+      console.error('Error fetching project_items:', err);
+      // Continue with empty projects array
+    }
+  }
+  
+  return brand as (Brand & {
     items: (Tables<"items"> & {
       project_items: { project_id: string; projects: Tables<"projects"> | null }[];
     })[];

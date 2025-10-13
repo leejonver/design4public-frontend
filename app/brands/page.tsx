@@ -17,13 +17,13 @@ export default async function BrandsPage() {
       <h1 className="mb-4 text-xl font-semibold">Brands</h1>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {brands.map((brand: any) => (
-          <Card key={brand.id}>
+          <Card key={brand.id} className="overflow-hidden transition-shadow hover:shadow-lg">
             <Link href={`/brands/${brand.slug}`}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden">
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-50">
                 <img
-                  src={brand.cover_image_url ?? brand.logo_image_url ?? "/placeholder.png"}
+                  src={brand.logo_image_url ?? brand.cover_image_url ?? "/placeholder.png"}
                   alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain p-8"
                 />
               </div>
             </Link>
