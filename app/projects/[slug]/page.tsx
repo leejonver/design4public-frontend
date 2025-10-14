@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { InquiryDialog } from "@/components/inquiry-dialog";
 import { formatArea } from "@/lib/utils";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const project = await fetchProjectBySlug(params.slug);
+  const { slug } = await params;
+  const project = await fetchProjectBySlug(decodeURIComponent(slug));
   if (!project) return {};
   const images = project.project_images
     .map((image: { image_url: string | null }) => image.image_url)
@@ -26,7 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ProjectDetailPage({ params }: Props) {
-  const project = await fetchProjectBySlug(params.slug);
+  const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug);
+  const project = await fetchProjectBySlug(decodedSlug);
   if (!project) return notFound();
 
   const tags = project.project_tags

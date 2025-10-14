@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchBrandBySlug } from "@/lib/api";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export default async function BrandDetailPage({ params }: Props) {
-  const brand = await fetchBrandBySlug(params.slug);
+  const { slug } = await params;
+  const brand = await fetchBrandBySlug(decodeURIComponent(slug));
   if (!brand) return notFound();
 
   const projects = brand.projects

@@ -4,10 +4,11 @@ import { fetchItemBySlug } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { formatArea } from "@/lib/utils";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export default async function ItemDetailPage({ params }: Props) {
-  const item = await fetchItemBySlug(params.slug);
+  const { slug } = await params;
+  const item = await fetchItemBySlug(decodeURIComponent(slug));
   if (!item) return notFound();
 
   type RelatedProject = {
