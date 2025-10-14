@@ -20,7 +20,10 @@ export function ProjectsFilter() {
   const { data: tags } = useSWR("tags-filter", () => fetchTags());
 
   const brandOptions: BrandFilter[] = useMemo(() => {
-    return (brands ?? []).map((b: { id: string; name: string }) => ({ id: b.id, name: b.name }));
+    return (brands ?? []).map((b: { id: string; name_ko: string; name_en: string | null }) => ({ 
+      id: b.id, 
+      name: b.name_ko || b.name_en || '이름 없음' 
+    }));
   }, [brands]);
 
 const tagOptions: TagFilter[] = useMemo(() => {
