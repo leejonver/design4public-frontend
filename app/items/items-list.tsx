@@ -6,6 +6,7 @@ import { fetchItems } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ItemsSkeleton } from "./items-skeleton";
+import { addCacheBuster } from "@/lib/utils";
 
 function useItemFilters() {
   if (typeof window === "undefined") return { q: "", brands: [], tags: [] };
@@ -71,7 +72,7 @@ export function ItemsList() {
             <Link href={`/items/${item.slug}`}>
               <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <img
-                  src={item.image_url ?? "/placeholder.png"}
+                  src={addCacheBuster(item.image_url)}
                   alt={item.name}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />

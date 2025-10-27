@@ -3,6 +3,9 @@ import Link from "next/link";
 import { fetchItemBySlug } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { addCacheBuster } from "@/lib/utils";
+
+export const revalidate = 0; // 항상 최신 데이터 가져오기
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -48,7 +51,7 @@ export default async function ItemDetailPage({ params }: Props) {
       </header>
 
       <img
-        src={item.image_url ?? "/placeholder.png"}
+        src={addCacheBuster(item.image_url)}
         alt={item.name}
         className="w-full rounded-md object-cover"
       />
@@ -88,7 +91,7 @@ export default async function ItemDetailPage({ params }: Props) {
                 <Link href={`/projects/${project.slug}`}>
                   <div className="relative aspect-[4/3] w-full overflow-hidden">
                     <img
-                      src={project.cover_image_url ?? "/placeholder.png"}
+                      src={addCacheBuster(project.cover_image_url)}
                       alt={project.title}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />

@@ -7,6 +7,7 @@ import { fetchProjects } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProjectsSkeleton } from "./projects-skeleton";
+import { addCacheBuster } from "@/lib/utils";
 
 type ProjectFilters = {
   q: string;
@@ -87,7 +88,7 @@ export function ProjectsGrid() {
             <Link href={`/projects/${project.slug}`}>
               <div className="relative aspect-[4/3] w-full overflow-hidden">
                 <img
-                  src={cover}
+                  src={addCacheBuster(cover)}
                   alt={project.title}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />

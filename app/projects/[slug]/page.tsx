@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { fetchProjectBySlug } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { InquiryDialog } from "@/components/inquiry-dialog";
+import { addCacheBuster } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -70,7 +71,7 @@ export default async function ProjectDetailPage({ params }: Props) {
       {coverImage && (
         <div className="relative w-full overflow-hidden rounded-lg">
           <img
-            src={coverImage}
+            src={addCacheBuster(coverImage)}
             alt={project.title}
             className="w-full aspect-[16/9] object-cover"
           />
@@ -114,7 +115,7 @@ export default async function ProjectDetailPage({ params }: Props) {
             {galleryImages.map((image: { id: string; image_url: string }) => (
               <div key={image.id} className="w-full">
                 <img
-                  src={image.image_url}
+                  src={addCacheBuster(image.image_url)}
                   alt={project.title}
                   className="w-full rounded-lg object-cover"
                 />
@@ -132,7 +133,7 @@ export default async function ProjectDetailPage({ params }: Props) {
               <li key={item.id} className="rounded-lg border p-4">
                 <div className="flex items-center gap-4">
                   <img
-                    src={item.image_url ?? "/placeholder.png"}
+                    src={addCacheBuster(item.image_url)}
                     alt={item.name}
                     className="h-20 w-28 rounded object-cover"
                   />
