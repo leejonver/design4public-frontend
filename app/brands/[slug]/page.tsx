@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchBrandBySlug } from "@/lib/api";
+import { addCacheBuster } from "@/lib/utils";
+
+export const revalidate = 0; // 항상 최신 데이터 가져오기
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -32,7 +35,7 @@ export default async function BrandDetailPage({ params }: Props) {
       <div className="relative">
         <div className="h-64 w-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 sm:h-80">
           <img
-            src={brand.cover_image_url ?? "/placeholder.png"}
+            src={addCacheBuster(brand.cover_image_url)}
             alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
             className="h-full w-full object-cover"
           />
@@ -42,7 +45,7 @@ export default async function BrandDetailPage({ params }: Props) {
         <div className="absolute -bottom-16 left-4 sm:left-8">
           <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
             <img
-              src={brand.logo_image_url ?? brand.cover_image_url ?? "/placeholder.png"}
+              src={addCacheBuster(brand.logo_image_url ?? brand.cover_image_url)}
               alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
               className="h-full w-full object-contain p-2"
             />
@@ -96,7 +99,7 @@ export default async function BrandDetailPage({ params }: Props) {
                 >
                   <div className="aspect-square w-full overflow-hidden bg-gray-50">
                     <img
-                      src={item.image_url ?? "/placeholder.png"}
+                      src={addCacheBuster(item.image_url)}
                       alt={item.name}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
@@ -128,7 +131,7 @@ export default async function BrandDetailPage({ params }: Props) {
                 >
                   <div className="aspect-video w-full overflow-hidden bg-gray-50">
                     <img
-                      src={project.cover_image_url ?? "/placeholder.png"}
+                      src={addCacheBuster(project.cover_image_url)}
                       alt={project.title}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />

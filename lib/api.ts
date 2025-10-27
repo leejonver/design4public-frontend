@@ -90,6 +90,7 @@ export async function fetchBrands() {
         'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
       },
+      cache: 'no-store',
     });
     
     if (!response.ok) {
@@ -111,6 +112,7 @@ export async function fetchBrandBySlug(slug: string) {
       'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
     },
+    cache: 'no-store',
   });
   
   if (!brandResponse.ok) {
@@ -137,6 +139,7 @@ export async function fetchBrandBySlug(slug: string) {
           'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}`,
         },
+        cache: 'no-store',
       });
       
       if (projectItemsResponse.ok) {

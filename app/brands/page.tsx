@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchBrands, fetchProjects } from "@/lib/api";
+import { addCacheBuster } from "@/lib/utils";
 
 export const metadata = { title: "Brands" };
+export const revalidate = 0; // 항상 최신 데이터 가져오기
 
 export default async function BrandsPage() {
   const [brands, projects] = await Promise.all([fetchBrands(), fetchProjects()]);
@@ -21,7 +23,7 @@ export default async function BrandsPage() {
             <Link href={`/brands/${brand.slug}`}>
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-50">
                 <img
-                  src={brand.logo_image_url ?? brand.cover_image_url ?? "/placeholder.png"}
+                  src={addCacheBuster(brand.logo_image_url ?? brand.cover_image_url)}
                   alt={brand.name_ko ?? brand.name_en ?? "브랜드"}
                   className="h-full w-full object-contain p-8"
                 />
