@@ -3,7 +3,7 @@ import type { Tables } from "./database.types";
 
 type ProjectFilters = {
   q?: string;
-  brands?: string[];
+  years?: string[];
   tags?: string[];
 };
 
@@ -25,7 +25,8 @@ export async function fetchProjects(filters: ProjectFilters = {}) {
        project_items(item_id,items(id,slug,name,description,image_url,nara_url,brand_id,brands(id,slug,name_ko,name_en)))`
     )
     .eq("status", "published")
-    .order("year", { ascending: false, nullsFirst: false });
+    .order("year", { ascending: false, nullsFirst: false })
+    .order("title", { ascending: true });
   if (error) throw error;
   let projects = (data ?? []) as Project[];
 
@@ -39,9 +40,9 @@ export async function fetchProjects(filters: ProjectFilters = {}) {
     });
   }
 
-  if (filters.brands?.length) {
+  if (filters.years?.length) {
     projects = projects.filter((project) =>
-      project.project_items.some((item) => item.items?.brand_id && filters.brands!.includes(item.items.brand_id))
+      project.year && filters.years!.includes(String(project.year))
     );
   }
 

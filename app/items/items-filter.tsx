@@ -53,7 +53,6 @@ export function ItemsFilter() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="mb-2 text-base font-semibold">필터</h2>
         <Input
           placeholder="검색 (이름, 설명, 태그)"
           value={search}

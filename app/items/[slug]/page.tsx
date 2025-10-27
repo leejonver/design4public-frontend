@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchItemBySlug } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
-import { formatArea } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -80,27 +80,31 @@ export default async function ItemDetailPage({ params }: Props) {
       ) : null}
 
       <section>
-        <h2 className="mb-2 text-lg font-medium">아이템이 들어간 프로젝트</h2>
+        <h2 className="mb-4 text-lg font-medium">아이템이 들어간 프로젝트</h2>
         {relatedProjects.length ? (
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {relatedProjects.map((project) => (
-              <li key={project.id} className="rounded-lg border p-4">
-                <Link href={`/projects/${project.slug}`} className="flex items-center gap-4">
-                  <img
-                    src={project.cover_image_url ?? "/placeholder.png"}
-                    alt={project.title}
-                    className="h-20 w-28 rounded object-cover"
-                  />
-                  <div>
-                    <div className="font-medium">{project.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {project.year ?? "연도 미정"} · {formatArea(project.area ?? undefined)}
-                    </div>
+              <Card key={project.id} className="group">
+                <Link href={`/projects/${project.slug}`}>
+                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                    <img
+                      src={project.cover_image_url ?? "/placeholder.png"}
+                      alt={project.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
                   </div>
                 </Link>
-              </li>
+                <CardHeader>
+                  <CardTitle className="text-base">{project.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xs text-muted-foreground">
+                    {project.year ?? "연도 미정"}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">
             아직 연관된 프로젝트가 없습니다.

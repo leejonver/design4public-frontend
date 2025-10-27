@@ -5,16 +5,15 @@ import useSWR from "swr";
 import { fetchProjects } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatArea } from "@/lib/utils";
 import { ProjectsSkeleton } from "./projects-skeleton";
 
 function useProjectFilters() {
-  if (typeof window === "undefined") return { q: "", brands: [], tags: [] };
+  if (typeof window === "undefined") return { q: "", years: [], tags: [] };
   const params = new URLSearchParams(window.location.search);
   const q = params.get("q") ?? "";
-  const brands = params.get("brands")?.split(",").filter(Boolean) ?? [];
+  const years = params.get("years")?.split(",").filter(Boolean) ?? [];
   const tags = params.get("tags")?.split(",").filter(Boolean) ?? [];
-  return { q, brands, tags };
+  return { q, years, tags };
 }
 
 export function ProjectsGrid() {
@@ -35,9 +34,6 @@ export function ProjectsGrid() {
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project: any) => {
-        const brandNames = project.project_items
-          .map((item: any) => item.items?.brands?.name_ko ?? item.items?.brands?.name_en)
-          .filter(Boolean) as string[];
         const tags = project.project_tags
           .map((tag: any) => (tag.tags?.type === "project" ? tag.tags?.name : undefined))
           .filter((name: string | undefined): name is string => Boolean(name));
@@ -58,17 +54,13 @@ export function ProjectsGrid() {
               <CardTitle className="text-base">{project.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="mb-2 line-clamp-2 text-sm text-muted-foreground">{project.description}</div>
               <div className="mb-2 flex flex-wrap gap-2">
                 {tags.slice(0, 3).map((tag: string) => (
                   <Badge key={tag}>#{tag}</Badge>
                 ))}
               </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>
-                  {project.year ?? "연도 미정"} · {formatArea(project.area ?? undefined)}
-                </span>
-                <span>{brandNames.join(", ")}</span>
+              <div className="text-xs text-muted-foreground">
+                {project.year ?? "연도 미정"}
               </div>
             </CardContent>
           </Card>

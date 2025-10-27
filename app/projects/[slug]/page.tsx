@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { fetchProjectBySlug } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { InquiryDialog } from "@/components/inquiry-dialog";
-import { formatArea } from "@/lib/utils";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -60,31 +59,70 @@ export default async function ProjectDetailPage({ params }: Props) {
       brand: item.brands,
     }));
 
-  return (
-    <article className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-2xl font-semibold">{project.title}</h1>
-        {project.description ? <p className="text-muted-foreground">{project.description}</p> : null}
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag: string) => (
-            <Badge key={tag}>#{tag}</Badge>
-          ))}
-        </div>
-        <div className="text-sm text-muted-foreground">
-          시공연도 {project.year ?? "미정"} · 면적 {formatArea(project.area ?? undefined)}
-        </div>
-      </header>
+  const coverImage = project.cover_image_url ?? project.project_images[0]?.image_url;
+  const galleryImages = project.project_images.filter(
+    (image: { id: string; image_url: string }) => image.image_url !== coverImage
+  );
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {project.project_images.map((image: { id: string; image_url: string }) => (
+  return (
+    <article className="space-y-8">
+      {/* 대표 이미지 */}
+      {coverImage && (
+        <div className="relative w-full overflow-hidden rounded-lg">
           <img
-            key={image.id}
-            src={image.image_url}
+            src={coverImage}
             alt={project.title}
-            className="w-full rounded-md object-cover"
+            className="w-full aspect-[16/9] object-cover"
           />
-        ))}
-      </section>
+        </div>
+      )}
+
+      {/* 프로젝트 정보 섹션 */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* 좌측: 프로젝트 정보 */}
+        <div className="flex-1 space-y-4">
+          <header className="space-y-3">
+            <h1 className="text-3xl font-semibold">{project.title}</h1>
+            
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <span>{project.year ?? "연도 미정"}</span>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag: string) => (
+                <Badge key={tag}>#{tag}</Badge>
+              ))}
+            </div>
+
+            {project.description && (
+              <p className="text-muted-foreground leading-relaxed">{project.description}</p>
+            )}
+          </header>
+        </div>
+
+        {/* 우측: CTA 버튼 */}
+        <div className="lg:w-64">
+          <InquiryDialog />
+        </div>
+      </div>
+
+      {/* 이미지 갤러리 (본문 형식) */}
+      {galleryImages.length > 0 && (
+        <section className="space-y-6">
+          <h2 className="text-xl font-semibold">프로젝트 이미지</h2>
+          <div className="space-y-4">
+            {galleryImages.map((image: { id: string; image_url: string }) => (
+              <div key={image.id} className="w-full">
+                <img
+                  src={image.image_url}
+                  alt={project.title}
+                  className="w-full rounded-lg object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {items.length ? (
         <section>
@@ -122,10 +160,6 @@ export default async function ProjectDetailPage({ params }: Props) {
           </ul>
         </section>
       ) : null}
-
-      <div>
-        <InquiryDialog />
-      </div>
     </article>
   );
 }
