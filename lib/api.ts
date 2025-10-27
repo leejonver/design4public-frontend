@@ -163,7 +163,12 @@ export async function fetchBrandBySlug(slug: string) {
 export type Item = Tables<"items"> & {
   brands: Tables<"brands"> | null;
   item_tags: (Tables<"item_tags"> & { tags: Tables<"tags"> | null })[];
-  project_items: { project_id: string; projects: Tables<"projects"> | null }[];
+  project_items: { 
+    project_id: string; 
+    projects: (Tables<"projects"> & { 
+      project_images: Tables<"project_images">[] 
+    }) | null 
+  }[];
 };
 
 export async function fetchItems() {
@@ -186,7 +191,7 @@ export async function fetchItemBySlug(slug: string) {
       `id,slug,name,description,image_url,nara_url,brand_id,status,
        brands(id,slug,name_ko,name_en,description,cover_image_url,website_url),
        item_tags(tag_id,tags(id,name,type)),
-       project_items(project_id,projects(id,slug,title,cover_image_url,year,status,area,location))`
+       project_items(project_id,projects(id,slug,title,cover_image_url,year,status,area,location,project_images(id,image_url,order)))`
     )
     .eq("slug", slug)
     .maybeSingle();

@@ -24,10 +24,19 @@ export default async function ItemDetailPage({ params }: Props) {
     brand_count?: number | null;
     name_ko?: string | null;
     name_en?: string | null;
+    project_images?: { id: string; image_url: string; order: number }[];
   };
 
   const relatedProjects: RelatedProject[] = item.project_items
-    .map((pi: { project_id: string; projects: RelatedProject | null }) => pi.projects)
+    .map((pi: { project_id: string; projects: RelatedProject | null }) => {
+      if (!pi.projects) return null;
+      // cover_image_url이 없으면 project_images의 첫 번째 이미지 사용
+      const coverImage = pi.projects.cover_image_url ?? pi.projects.project_images?.[0]?.image_url ?? null;
+      return {
+        ...pi.projects,
+        cover_image_url: coverImage,
+      };
+    })
     .filter((project: RelatedProject | null): project is RelatedProject => Boolean(project));
 
   const tags = item.item_tags
