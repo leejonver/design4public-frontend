@@ -1,24 +1,67 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { fetchProjects } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProjectsSkeleton } from "./projects-skeleton";
 
+type ProjectFilters = {
+  q: string;
+  years: string[];
+  tags: string[];
+};
+
 function useProjectFilters() {
-  if (typeof window === "undefined") return { q: "", years: [], tags: [] };
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get("q") ?? "";
-  const years = params.get("years")?.split(",").filter(Boolean) ?? [];
-  const tags = params.get("tags")?.split(",").filter(Boolean) ?? [];
-  return { q, years, tags };
+  const [filters, setFilters] = useState<ProjectFilters>({ q: "", years: [], tags: [] });
+
+  useEffect(() => {
+    const updateFilters = () => {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("q") ?? "";
+      const years = params.get("years")?.split(",").filter(Boolean) ?? [];
+      const tags = params.get("tags")?.split(",").filter(Boolean) ?? [];
+      setFilters({ q, years, tags });
+    };
+
+    updateFilters();
+    
+    // URL 변경 감지
+    const handleUrlChange = () => updateFilters();
+    window.addEventListener("popstate", handleUrlChange);
+    
+    // MutationObserver를 사용하여 pushState/replaceState 감지
+    const originalPushState = window.history.pushState;
+    const originalReplaceState = window.history.replaceState;
+    
+    window.history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleUrlChange();
+    };
+    
+    window.history.replaceState = function(...args) {
+      originalReplaceState.apply(this, args);
+      handleUrlChange();
+    };
+
+    return () => {
+      window.removeEventListener("popstate", handleUrlChange);
+      window.history.pushState = originalPushState;
+      window.history.replaceState = originalReplaceState;
+    };
+  }, []);
+
+  return filters;
 }
 
 export function ProjectsGrid() {
   const filters = useProjectFilters();
-  const { data, error, isLoading } = useSWR(["projects-grid", filters], () => fetchProjects(filters));
+  const { data, error, isLoading } = useSWR(
+    ["projects-grid", JSON.stringify(filters)], 
+    () => fetchProjects(filters)
+  );
 
   if (isLoading) return <ProjectsSkeleton />;
   if (error) {
