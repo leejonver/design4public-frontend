@@ -13,20 +13,21 @@ export default async function BrandDetailPage({ params }: Props) {
   if (!brand) return notFound();
 
   const projects = brand.projects
-    .map((item: { project_id: string; projects: any | null }) =>
-      item.projects
-        ? {
-            id: item.projects.id,
-            title: item.projects.title,
-            cover_image_url: item.projects.cover_image_url,
-            year: item.projects.year,
-            slug:
-              "slug" in item.projects && typeof item.projects.slug === "string"
-                ? item.projects.slug
-                : item.projects.id,
-          }
-        : null
-    )
+    .map((item: { project_id: string; projects: any | null }) => {
+      if (!item.projects) return null;
+      // cover_image_url이 없으면 project_images의 첫 번째 이미지 사용
+      const coverImage = item.projects.cover_image_url ?? item.projects.project_images?.[0]?.image_url ?? null;
+      return {
+        id: item.projects.id,
+        title: item.projects.title,
+        cover_image_url: coverImage,
+        year: item.projects.year,
+        slug:
+          "slug" in item.projects && typeof item.projects.slug === "string"
+            ? item.projects.slug
+            : item.projects.id,
+      };
+    })
     .filter((project: { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null } | null): project is { id: string; slug: string; cover_image_url: string | null; title: string; year: number | null } => Boolean(project));
 
   return (

@@ -133,7 +133,7 @@ export async function fetchBrandBySlug(slug: string) {
   if (brand.items && brand.items.length > 0) {
     try {
       const itemIds = brand.items.map((item: any) => item.id).join(',');
-      const projectItemsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/project_items?select=project_id,item_id,projects(id,slug,title,cover_image_url,year,status)&item_id=in.(${itemIds})`;
+      const projectItemsUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/project_items?select=project_id,item_id,projects(id,slug,title,cover_image_url,year,status,project_images(id,image_url,order))&item_id=in.(${itemIds})`;
       const projectItemsResponse = await fetch(projectItemsUrl, {
         headers: {
           'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
