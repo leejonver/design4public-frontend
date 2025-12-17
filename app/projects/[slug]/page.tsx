@@ -1,10 +1,9 @@
 import { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchProjectBySlug } from "@/lib/api";
+import { fetchProjectBySlug, fetchProjectPhotosWithItems } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { InquiryDialog } from "@/components/inquiry-dialog";
-import { addCacheBuster } from "@/lib/utils";
+import { PhotoGallerySlider } from "@/components/photo-gallery-slider";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -32,136 +31,93 @@ export default async function ProjectDetailPage({ params }: Props) {
   const project = await fetchProjectBySlug(decodedSlug);
   if (!project) return notFound();
 
+  // Fetch photos with linked items
+  const photosWithItems = await fetchProjectPhotosWithItems(project.id);
+
   const tags = project.project_tags
     .map((tag: { tag_id: string; tags: { name: string; type?: string } | null }) =>
       tag.tags?.type === "project" ? tag.tags?.name : undefined
     )
     .filter((name: string | null): name is string => Boolean(name));
 
-  type RelatedItem = {
-    id: string;
-    slug: string;
-    name: string;
-    description: string;
-    image_url: string | null;
-    nara_url: string | null;
-    brands: { id: string; name_ko: string; name_en: string | null } | null;
-  };
+  // Fallback to project_images if no photos from new table
+  const hasPhotosWithItems = photosWithItems.length > 0;
+  const fallbackImages = project.project_images.map((img: { id: string; image_url: string; order?: number }, index: number) => ({
+    id: img.id,
+    image_url: img.image_url,
+    alt_text: project.title,
+    title: null,
+    order: img.order ?? index,
+    items: [],
+  }));
 
-  type RelatedItemWithBrand = RelatedItem & {
-    brand: { id: string; name_ko: string; name_en: string | null } | null;
-  };
-
-  const items: RelatedItemWithBrand[] = project.project_items
-    .map((pi: { item_id: string; items: RelatedItem | null }) => pi.items)
-    .filter((item: RelatedItem | null): item is RelatedItem => Boolean(item))
-    .map((item: RelatedItem) => ({
-      ...item,
-      brand: item.brands,
-    }));
-
-  const coverImage = project.cover_image_url ?? project.project_images[0]?.image_url;
-  const galleryImages = project.project_images.filter(
-    (image: { id: string; image_url: string }) => image.image_url !== coverImage
-  );
+  const galleryPhotos = hasPhotosWithItems ? photosWithItems : fallbackImages;
 
   return (
-    <article className="space-y-8">
-      {/* 대표 이미지 */}
-      {coverImage && (
-        <div className="relative w-full overflow-hidden rounded-lg">
-          <img
-            src={addCacheBuster(coverImage)}
-            alt={project.title}
-            className="w-full aspect-[16/9] object-cover"
-          />
-        </div>
-      )}
+    <article className="space-y-6">
+      {/* 프로젝트 타이틀 - 상단 */}
+      <header>
+        <h1 className="text-2xl font-semibold">{project.title}</h1>
+      </header>
 
-      {/* 프로젝트 정보 섹션 */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* 좌측: 프로젝트 정보 */}
-        <div className="flex-1 space-y-4">
-          <header className="space-y-3">
-            <h1 className="text-3xl font-semibold">{project.title}</h1>
-            
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span>{project.year ?? "연도 미정"}</span>
+      {/* 메인 컨텐츠: 좌측 사이드바 + 우측 슬라이더 */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* 좌측 사이드바: 프로젝트 정보 */}
+        <aside className="lg:w-48 shrink-0 space-y-4">
+          {/* 프로젝트 정보 - 하나의 div로 정리 */}
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            {/* 설치 연도 */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 w-14 shrink-0">설치연도</span>
+              <span className="text-sm font-medium text-gray-900">
+                {project.year ?? "미정"}
+              </span>
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {tags.map((tag: string) => (
-                <Badge key={tag}>#{tag}</Badge>
-              ))}
-            </div>
-
-            {project.description && (
-              <p className="text-muted-foreground leading-relaxed">{project.description}</p>
+            {/* 지역 */}
+            {project.location && (
+              <div className="flex items-start gap-2">
+                <span className="text-xs text-gray-500 w-14 shrink-0">지역</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {project.location}
+                </span>
+              </div>
             )}
-          </header>
-        </div>
 
-        {/* 우측: CTA 버튼 */}
-        <div className="lg:w-64">
-          <InquiryDialog />
+            {/* 설명 */}
+            {project.description && (
+              <div className="pt-2 border-t border-gray-200">
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {project.description}
+                </p>
+              </div>
+            )}
+
+            {/* 태그 */}
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-2">
+                {tags.map((tag: string) => (
+                  <Badge key={tag}>#{tag}</Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 문의 버튼 */}
+          <InquiryDialog label="담당자에게 물어보기" />
+        </aside>
+
+        {/* 우측: 이미지 슬라이더 */}
+        <div className="flex-1 min-w-0">
+          {galleryPhotos.length > 0 && (
+            <PhotoGallerySlider
+              photos={galleryPhotos}
+              projectTitle={project.title}
+              projectSlug={decodedSlug}
+            />
+          )}
         </div>
       </div>
-
-      {/* 이미지 갤러리 (본문 형식) */}
-      {galleryImages.length > 0 && (
-        <section className="space-y-6">
-          <h2 className="text-xl font-semibold">프로젝트 이미지</h2>
-          <div className="space-y-4">
-            {galleryImages.map((image: { id: string; image_url: string }) => (
-              <div key={image.id} className="w-full">
-                <img
-                  src={addCacheBuster(image.image_url)}
-                  alt={project.title}
-                  className="w-full rounded-lg object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {items.length ? (
-        <section>
-          <h2 className="mb-2 text-lg font-medium">연관된 아이템</h2>
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {items.map((item: RelatedItemWithBrand) => (
-              <li key={item.id} className="rounded-lg border p-4">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={addCacheBuster(item.image_url)}
-                    alt={item.name}
-                    className="h-20 w-28 rounded object-cover"
-                  />
-                  <div className="flex-1">
-                    <Link href={`/items/${item.slug}`} className="font-medium hover:underline">
-                      {item.name}
-                    </Link>
-                    <p className="line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {item.brand
-                        ? `브랜드: ${item.brand.name_ko}${item.brand.name_en ? ` (${item.brand.name_en})` : ""}`
-                        : "브랜드 정보 없음"}
-                    </div>
-                    {item.nara_url ? (
-                      <div className="mt-2 text-xs">
-                        <a href={item.nara_url} target="_blank" className="text-sage-700 underline">
-                          나라장터종합쇼핑몰 바로가기
-                        </a>
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </article>
   );
 }
-

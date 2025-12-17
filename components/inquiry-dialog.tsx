@@ -1,25 +1,34 @@
 "use client";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { InquiryForm } from "@/components/inquiry-form";
+import { useState } from "react";
 
-type Props = { label?: string };
+type Props = {
+  label?: string;
+  projectSlug?: string;
+};
 
-export function InquiryDialog({ label = "프로젝트 문의하기" }: Props) {
-  const tally = process.env.NEXT_PUBLIC_TALLY_INQUIRY_URL || "https://tally.so/r/w8Vj0L";
+export function InquiryDialog({ label = "프로젝트 문의하기", projectSlug }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-sage-600 hover:bg-sage-700">{label}</Button>
+        <Button className="bg-sage-600 hover:bg-sage-700 w-full">{label}</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>문의하기</DialogTitle>
         </DialogHeader>
-        <div className="aspect-[16/10] w-full overflow-hidden rounded-md">
-          <iframe src={tally} width="100%" height="100%" className="h-full w-full" title="문의 폼" />
-        </div>
+        <InquiryForm
+          projectSlug={projectSlug}
+          onSuccess={() => {
+            // Keep dialog open to show success message
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
 }
-
