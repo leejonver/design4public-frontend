@@ -3,26 +3,49 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  /* Background & Surface Colors - Steelcase inspired off-white */
+  --background: 0 0% 96.5%; /* #f6f6f6 */
+  --foreground: 0 0% 10%; /* #191919 - dark text */
+  
+  /* Card & Surface */
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 0 0% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
+  --popover-foreground: 0 0% 10%;
+  
+  /* Brand Colors - Sage Green */
   --primary: 134 23% 41%; /* sage-600 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  
+  /* Secondary & Muted */
+  --secondary: 0 0% 94%; /* light gray */
+  --secondary-foreground: 0 0% 20%;
+  --muted: 0 0% 92%;
+  --muted-foreground: 0 0% 40%;
+  
+  /* Accent */
+  --accent: 0 0% 94%;
+  --accent-foreground: 0 0% 15%;
+  
+  /* Destructive */
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 214.3 31.8% 91.4%;
-  --radius: 0.6rem;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Borders & Inputs */
+  --border: 0 0% 88%;
+  --input: 0 0% 88%;
+  --ring: 134 23% 41%; /* sage for focus ring */
+  --radius: 0.5rem;
+  
+  /* Additional Design Tokens */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* Base Styles */
+html {
+  scroll-behavior: smooth;
 }
 
 html, body {
@@ -30,7 +53,36 @@ html, body {
 }
 
 body {
-  @apply bg-background text-foreground;
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Typography Enhancements */
+h1, h2, h3, h4, h5, h6 {
+  @apply tracking-tight font-semibold;
+}
+
+/* Smooth Transitions for All Interactive Elements */
+a, button, input, select, textarea {
+  @apply transition-colors duration-200;
+}
+
+/* Card Hover Effects */
+.card-hover {
+  @apply transition-all duration-300 ease-out;
+}
+
+.card-hover:hover {
+  @apply shadow-lg -translate-y-1;
+}
+
+/* Image Scale on Hover */
+.img-hover-scale {
+  @apply transition-transform duration-300 ease-out;
+}
+
+.img-hover-scale:hover {
+  @apply scale-105;
 }
 
 /* Masonry utility */
@@ -42,3 +94,65 @@ body {
   margin-bottom: 1rem;
 }
 
+/* Filter Toggle Switch Style */
+.toggle-switch {
+  @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors;
+}
+
+.toggle-switch[data-state="checked"] {
+  @apply bg-primary;
+}
+
+.toggle-switch[data-state="unchecked"] {
+  @apply bg-muted;
+}
+
+/* Collapsible Filter Section */
+.filter-section {
+  @apply border-b border-border py-4;
+}
+
+.filter-section:last-child {
+  @apply border-b-0;
+}
+
+/* Badge Styles */
+.badge-new {
+  @apply bg-sage-600 text-white text-xs font-medium px-2 py-0.5 rounded-sm;
+}
+
+.badge-featured {
+  @apply bg-gray-900 text-white text-xs font-medium px-2 py-0.5 rounded-sm;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* Stagger Children Animation */
+.stagger-children > * {
+  opacity: 0;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-children > *:nth-child(9) { animation-delay: 0.45s; }
